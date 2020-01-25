@@ -1,4 +1,5 @@
 ﻿using eShopOnWeb.UITests.PagesModels;
+using FluentAssertions;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -29,16 +30,29 @@ namespace eShopOnWeb.UITests
         }
             
 
+
         [Test]
-        public void FirstTest()
+        public void TryLogIn_InvalidPassword_ShouldNotLogin()
         {
             var homePage = new HomePage(_driver);
             homePage.gotToPage();
             
             var loginPage = homePage.goToLoginPage();
-            loginPage.LogIntoApp();
+            loginPage.LogIntoApp("invalid login");
+
+            loginPage.GetNotLogedInAlert.Should().Be("Invalid login attempt.");
         }
 
+
+        //Helper function for loggin in with valid data
+        private HomePage LogIntoApp()
+        {
+            var homePage = new HomePage(_driver);
+            homePage.gotToPage();
+
+            var loginPage = homePage.goToLoginPage();
+            return loginPage.LogIntoApp();
+        }
 
     }
 }
