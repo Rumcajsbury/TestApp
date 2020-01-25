@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Web.Features.MyOrders;
+using Microsoft.eShopWeb.Web.ViewModels;
 using Moq;
 using NUnit.Framework;
 
@@ -28,6 +29,16 @@ namespace eShopOnWeb.UnitTests.Features
 
             list.Should()
                 .NotBeEmpty();
+        }
+        [Test]
+        public async Task Handle_Should_ThrowNullReferenceException_If_RequstParameterIsNull()
+        {
+            var orderRepositoryMock = new Mock<IOrderRepository>();
+            var getMyordershandler = new GetMyOrdersHandler(orderRepositoryMock.Object);
+            var act = new Func<Task<IEnumerable<OrderViewModel>>>(() => getMyordershandler.Handle(null, CancellationToken.None));
+
+            await act.Should()
+                .ThrowAsync<NullReferenceException>();
         }
     }
 }
