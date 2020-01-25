@@ -17,6 +17,7 @@ namespace eShopOnWeb.UnitTests.Features
     [TestFixture]
     public class GetOrderDetailsHandlerTests
     {
+        [Test]
         public async Task Handle_Should_ReturnNull_IfOrderNotFound()
         {
             var orderRepoMock = new Mock<IOrderRepository>();
@@ -34,7 +35,28 @@ namespace eShopOnWeb.UnitTests.Features
 
             result.Should()
                 .BeNull();
+        }
+        [Test]
+        public async Task Handle_Should_ReturnOrderViewModel()
+        {
+            var orderRepoMock = new Mock<IOrderRepository>();
+            var id = 10;
+            orderRepoMock.Setup(x => x.ListAsync(It.IsAny<ISpecification<Order>>()))
+                .ReturnsAsync(
+                    new List<Order>()
+                    {
+                        new Order("1", new Address("s", "b", "e", "f", "g"), new List<OrderItem>()) {Id = 10},
+                        new Order("2", new Address("s", "b", "e", "f", "g"), new List<OrderItem>()) {Id = 12},
+                        new Order("3", new Address("s", "b", "e", "f", "g"), new List<OrderItem>()) {Id = 13},
+                    });
 
+            var getOrderDetailsHandler = new GetOrderDetailsHandler(orderRepoMock.Object);
+            var result = await getOrderDetailsHandler.Handle(new GetOrderDetails("pawel", id), CancellationToken.None);
+
+            result.Should()
+                .NotBeNull();
+            result.OrderNumber.Should()
+                .Be(id);
         }
     }
 }
