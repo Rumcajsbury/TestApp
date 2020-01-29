@@ -30,8 +30,74 @@ namespace eShopOnWeb.UnitTests.Services
                 It.IsAny<int>(),
                 It.IsAny<int>()));
 
-            act.Should()
+            await act.Should()
                 .ThrowAsync<NullReferenceException>();
+        }
+        [Test]
+        public async Task AddItemToBasket_Should_AddNewItem_ToGivenBasket()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basket = new Basket()
+            {
+                BuyerId = Guid.NewGuid().ToString(),
+                Id = 1
+            };
+            basketRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(basket);
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            await basketService.AddItemToBasket(
+                1,
+                2,
+                20,
+                1);
+
+            basket.Items.Should()
+                .NotBeEmpty();
+            basket.Items.FirstOrDefault()
+                .UnitPrice.Should()
+                .Be(20);
+        }
+        [Test]
+        public async Task AddItemToBasket_Should_Execute_UpdateAsync_ExactlyOnce()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basket = new Basket()
+            {
+                BuyerId = Guid.NewGuid().ToString(),
+                Id = 1
+            };
+            basketRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(basket);
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            await basketService.AddItemToBasket(
+                1,
+                2,
+                20,
+                1);
+
+            basketRepoMock.Verify(x => x.UpdateAsync(basket), Times.Once);
+        }
+        [Test]
+        public async Task DeleteBasketAsync_Should_Execute_DeleteAsync_ExactlyOnce()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basket = new Basket()
+            {
+                BuyerId = Guid.NewGuid().ToString(),
+                Id = 1
+            };
+            basketRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(basket);
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            await basketService.DeleteBasketAsync(1);
+
+            basketRepoMock.Verify(x => x.DeleteAsync(basket), Times.Once);
         }
     }
 }
