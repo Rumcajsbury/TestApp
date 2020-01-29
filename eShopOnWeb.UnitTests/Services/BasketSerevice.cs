@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Services;
+using Microsoft.eShopWeb.ApplicationCore.Specifications;
 using Moq;
 using NUnit.Framework;
 
@@ -98,6 +99,60 @@ namespace eShopOnWeb.UnitTests.Services
             await basketService.DeleteBasketAsync(1);
 
             basketRepoMock.Verify(x => x.DeleteAsync(basket), Times.Once);
+        }
+        [Test]
+        public async Task GetBasketItemCountAsync_Should_ReturnProperItemCount()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basket = new Basket()
+            {
+                BuyerId = Guid.NewGuid().ToString(),
+                Id = 1
+            };
+            var count = 0;
+            basket.AddItem(1, 2, 3);
+            basket.AddItem(1, 2, 7);
+            foreach (var basketItem in basket.Items)
+            {
+                count += basketItem.Quantity;
+            }
+            basketRepoMock.Setup(x => x.ListAsync(It.IsAny<BasketWithItemsSpecification>()))
+                .ReturnsAsync(new List<Basket>(){basket});
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            var countReturned = await basketService.GetBasketItemCountAsync("testUser");
+
+            countReturned.Should()
+                .Be(count);
+        }
+        [Test]
+        public async Task GetBasketItemCountAsync_Should_ReturnZero_WhenBaskedDoesntExist()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            basketRepoMock.Setup(x => x.ListAsync(It.IsAny<BasketWithItemsSpecification>()))
+                .ReturnsAsync(new List<Basket>());
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            var countReturned = await basketService.GetBasketItemCountAsync("testUser");
+
+            countReturned.Should()
+                .Be(0);
+        }
+        [Test]
+        public async Task GetBasketItemCountAsync_Should_ThrowArgumentException_WhenUserNameIsEmpty()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            basketRepoMock.Setup(x => x.ListAsync(It.IsAny<BasketWithItemsSpecification>()))
+                .ReturnsAsync(new List<Basket>());
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            var action = new Func<Task<int>>(() => basketService.GetBasketItemCountAsync(""));
+
+            await action.Should()
+                .ThrowAsync<ArgumentException>();
         }
     }
 }
