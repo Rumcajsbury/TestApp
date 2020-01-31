@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Linq;
 
 namespace eShopOnWeb.UITests
 {
@@ -12,15 +13,15 @@ namespace eShopOnWeb.UITests
     public class CommonUITests
     {
         private IWebDriver _driver;
-        private string URL = $"https://localhost:44315/";
-        IWait<IWebDriver> wait;
+        private string _url = $"https://localhost:44315/";
+        IWait<IWebDriver> _wait;
 
         [OneTimeSetUp]
         public void OneTimesSetUp()
         {
             _driver = new ChromeDriver(@"C:\drivers");
             _driver.Manage().Window.Maximize();
-            wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30.00));
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30.00));
         }
 
         [OneTimeTearDown]
@@ -42,6 +43,20 @@ namespace eShopOnWeb.UITests
 
             loginPage.GetNotLogedInAlert.Should().Be("Invalid login attempt.");
         }
+
+
+        [Test]
+        public void TryToChangePassword_NotMatchingPassword_ShouldNotUpdate()
+        {
+            var homepage = LogIntoApp();
+            var changePassword = new ChangePasswordPage(_driver, _url);
+            changePassword.GoToPage();
+            changePassword.ChangePassword(LogonUser.Password, "aaa", "bbb");
+            var result = changePassword.ErrorValidationResponse();
+
+            result.Should().Contain("The new password and confirmation password do not match.");
+        }
+
 
 
         //Helper function for loggin in with valid data
