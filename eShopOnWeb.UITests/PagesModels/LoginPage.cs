@@ -23,6 +23,14 @@ namespace eShopOnWeb.UITests.PagesModels
             return new HomePage(_driver);
         }
 
+        public BasketCheckoutPage LogIntoAppFromCheckout()
+        {
+            LoginInput.SendKeys(LogonUser.Login);
+            PasswordInput.SendKeys(LogonUser.Password);
+            LoginBtn.Click();
+            return new BasketCheckoutPage(_driver);
+        }
+
         public string GetNotLogedInAlert => NotLogedInAlert.Text;
     }
 }
