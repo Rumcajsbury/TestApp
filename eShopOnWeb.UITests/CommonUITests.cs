@@ -51,7 +51,7 @@ namespace eShopOnWeb.UITests
             var basketPage = homePage.AddShoppingItemToBasket();
             basketPage.SetQuantity(10);
 
-            var moneyAmount = basketPage.Checkout()
+            basketPage.Checkout()
                 .LogIntoAppFromCheckout()
                 .ContinueShopping()
                 .OpenOrdersPage()
