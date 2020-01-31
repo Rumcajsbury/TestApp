@@ -19,7 +19,7 @@ namespace eShopOnWeb.UnitTests.Services
     class OrderServiceTests
     {
         [Test]
-        public async Task BasketViewModelService_userWithoutBaskets_createBasket()
+        public async Task OrderServiceTests_createOrder_assertOrderValuesCorrect()
         {
             var orderRepository = new Mock<IAsyncRepository<Order>>();
             var basketRepository = new Mock<IAsyncRepository<Basket>>();
@@ -43,7 +43,7 @@ namespace eShopOnWeb.UnitTests.Services
             };
             
             basketRepository.Setup(x => x.GetByIdAsync(It.IsAny<int>()))
-              .ReturnsAsync(givenBasket);
+              .ReturnsAsync(givenBasket);   
             itemRepository.Setup(x => x.GetByIdAsync(It.IsAny<int>()))
               .ReturnsAsync(givenCatalogItem);
 
