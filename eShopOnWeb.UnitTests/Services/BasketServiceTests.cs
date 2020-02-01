@@ -179,5 +179,60 @@ namespace eShopOnWeb.UnitTests.Services
             await action.Should()
                 .ThrowAsync<BasketNotFoundException>();
         }
+
+        [Test]
+        public async Task TransferBasketAsync_Should_ThrowArgumentException_WhenAnonymousIdEmpty()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            var action = new Func<Task>(() => basketService.TransferBasketAsync("", "pawel"));
+
+            await action.Should()
+                .ThrowAsync<ArgumentException>();
+        }
+
+        [Test]
+        public async Task TransferBasketAsync_Should_ThrowArgumentException_WhenUserNameIsEmpty()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            var action = new Func<Task>(() => basketService.TransferBasketAsync("anonymous", ""));
+
+            await action.Should()
+                .ThrowAsync<ArgumentException>();
+        }
+
+        [Test]
+        public async Task TransferBasketAsync_Should_Run_UpdateAsync_OnlyOnce_WhenBasketFound()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            basketRepoMock.Setup(x => x.ListAsync(It.IsAny<ISpecification<Basket>>())).ReturnsAsync(new List<Basket>()
+                {new Basket() {BuyerId = "pawel", Id = 123}});
+            basketRepoMock.Setup(x => x.UpdateAsync(It.IsAny<Basket>()));
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            await basketService.TransferBasketAsync("anonymous", "pawel");
+
+            basketRepoMock.Verify(x => x.UpdateAsync(It.IsAny<Basket>()), Times.Once);
+        }
+        [Test]
+        public async Task TransferBasketAsync_Should_NeverRun_UpdateAsync_WhenBasketNotFound()
+        {
+            var basketRepoMock = new Mock<IAsyncRepository<Basket>>();
+            basketRepoMock.Setup(x => x.ListAsync(It.IsAny<ISpecification<Basket>>())).ReturnsAsync(new List<Basket>()
+                { });
+            basketRepoMock.Setup(x => x.UpdateAsync(It.IsAny<Basket>()));
+            var loggerMock = new Mock<IAppLogger<BasketService>>();
+            var basketService = new BasketService(basketRepoMock.Object, loggerMock.Object);
+
+            await basketService.TransferBasketAsync("anonymous", "pawel");
+
+            basketRepoMock.Verify(x => x.UpdateAsync(It.IsAny<Basket>()), Times.Never);
+        }
     }
 }
