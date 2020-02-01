@@ -16,7 +16,7 @@ namespace eShopOnWeb.UITests
         private string _url = $"https://localhost:44315/";
         IWait<IWebDriver> _wait;
 
-        [OneTimeSetUp]
+        [SetUp]
         public void OneTimesSetUp()
         {
             _driver = new ChromeDriver(@"C:\Drivers");
@@ -24,7 +24,7 @@ namespace eShopOnWeb.UITests
             _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30.00));
         }
 
-        [OneTimeTearDown]
+        [TearDown]
         public void OneTimeTearDown()
         {
             _driver.Close();
